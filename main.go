@@ -1,18 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"github.com/YeslieSnayder/WebServiceGo/handlers"
 	"log"
 	"net/http"
 )
 
 func main() {
 	log.Print("Starting the service...")
-
-	http.HandleFunc("/home", func(writer http.ResponseWriter, request *http.Request) {
-		fmt.Fprint(writer, "Home handler was awakened.")
-	})
-
-	log.Print("Service is ready to listen and serve")
-	http.ListenAndServe(":8000", nil)
+	router := handlers.Router()
+	log.Print("The service is ready to listen and serve")
+	log.Fatal(http.ListenAndServe(":8000", router))
 }
