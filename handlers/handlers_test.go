@@ -11,7 +11,7 @@ import (
 // POST should return code 405
 // GET for nonexistent method should return code 404
 func TestRouter(t *testing.T) {
-	r := Router()
+	r := Router("", "", "")
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 
