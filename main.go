@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"github.com/YeslieSnayder/WebServiceGo/handlers"
 	"github.com/YeslieSnayder/WebServiceGo/version"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 // How to try it: PORT=8000 go run main.go
@@ -21,6 +24,31 @@ func main() {
 	}
 
 	router := handlers.Router(version.BuildTime, version.Commit, version.Release)
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	srv := http.Server{
+		Addr:    ":" + port,
+		Handler: router,
+	}
+	go func() {
+		log.Fatal(srv.ListenAndServe())
+	}()
 	log.Print("The service is ready to listen and serve")
-	log.Fatal(http.ListenAndServe(":"+port, router))
+
+	killSignal := <-interrupt
+	switch killSignal {
+	case os.Interrupt:
+		log.Print("Got SIGINT...")
+	case syscall.SIGTERM:
+		log.Print("Got SIGTERM...")
+	}
+
+	log.Print("Server is shutting down...")
+	err := srv.Shutdown(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print("Done!")
 }
